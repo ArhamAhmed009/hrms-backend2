@@ -114,3 +114,69 @@ exports.deductLoanInstallment = async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+// Get All Loan Requests
+exports.getAllLoanRequests = async (req, res) => {
+  try {
+    // Fetch all loan records and populate the 'employeeId' field to get employee details
+    const loans = await Loan.find()
+      .populate('employeeId', 'employeeId name position'); // Include specific fields for employees
+
+    // Map the response to clean up the loan data
+    const formattedLoans = loans.map((loan) => ({
+      _id: loan._id,
+      employeeId: loan.employeeId?.employeeId || 'N/A',
+      employeeName: loan.employeeId?.name || 'Unknown Employee',
+      position: loan.employeeId?.position || 'N/A',
+      loanAmount: loan.loanAmount,
+      monthlyInstallment: loan.monthlyInstallment,
+      remainingBalance: loan.remainingBalance,
+      status: loan.status,
+      createdAt: loan.createdAt,
+      approvedDate: loan.approvedDate || null,
+    }));
+
+    res.status(200).json(formattedLoans);
+  } catch (error) {
+    console.error('Error fetching loan requests:', error.message);
+    res.status(500).json({ error: 'Error fetching loan requests' });
+  }
+};
+
+// Get Loan Requests for a Specific Employee
+exports.getEmployeeLoanRequests = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    // Find the employee by employeeId string (e.g., "E090")
+    const employee = await Employee.findOne({ employeeId });
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    // Fetch loan requests for the specific employee
+    const loans = await Loan.find({ employeeId: employee._id });
+
+    if (!loans || loans.length === 0) {
+      return res
+        .status(404)
+        .json({ error: 'No loan requests found for this employee' });
+    }
+
+    // Format the response data
+    const formattedLoans = loans.map((loan) => ({
+      _id: loan._id,
+      loanAmount: loan.loanAmount,
+      monthlyInstallment: loan.monthlyInstallment,
+      remainingBalance: loan.remainingBalance,
+      status: loan.status,
+      createdAt: loan.createdAt,
+      approvedDate: loan.approvedDate || null,
+    }));
+
+    res.status(200).json(formattedLoans);
+  } catch (error) {
+    console.error('Error fetching loan requests for employee:', error.message);
+    res.status(500).json({ error: 'Error fetching loan requests' });
+  }
+};

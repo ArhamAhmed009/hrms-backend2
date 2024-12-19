@@ -1,18 +1,26 @@
-    const express = require('express');
-    const router = express.Router();
-    const leaveController = require('../controllers/leaveController');
+const express = require('express');
+const router = express.Router();
+const leaveController = require('../controllers/leaveController');
 
-    // Employee requests leave
-    router.post('/request', leaveController.requestLeave);
+// Employee requests leave
+router.post('/request', leaveController.requestLeave);
 
-    // HR fetches leave requests (optional filter by status)
-    router.get('/requests', leaveController.getLeaveRequests);
+// Project Manager approves or rejects a leave request
+router.put('/requests/:leaveId/pm-approval', leaveController.projectManagerApproval);
 
-    // HR approves or rejects a leave request
-// HR approves or rejects a specific leave request
-router.put('/requests/:employeeId/:leaveId/status', leaveController.updateLeaveStatus);
+// HR approves or rejects a leave request (after PM approval)
+router.put('/requests/:leaveId/hr-approval', leaveController.hrApproval);
 
-    // Get leave requests for a specific employee
-    router.get('/requests/:employeeId', leaveController.getEmployeeLeaves);
+// HR fetches leave requests (filter by status or role: Project Manager or HR)
+router.get('/requests', leaveController.getLeaveRequests);
 
-    module.exports = router;
+// Get leave requests for a specific employee
+router.get('/requests/:employeeId', leaveController.getEmployeeLeaves);
+
+// Get leave balance for a specific employee
+router.get('/balance/:employeeId', leaveController.getLeaveBalance);
+
+router.get('/all-loan-requests', leaveController.getAllLoanRequests);
+
+
+module.exports = router;

@@ -35,28 +35,31 @@ exports.createSalary = async (req, res) => {
 
     // Default Deductions
     const defaultDeductions = {
-      providentFund: baseSalary * 0.05,
-      taxDeduction: isTaxFiler ? baseSalary * 0.12 : baseSalary * 0.06,
+      providentFund: baseSalary * 0.05, // 5% provident fund
+      taxDeduction: isTaxFiler ? baseSalary * 0.12 : baseSalary * 0.06, // Tax based on filer status
       professionalTax: 0,
       furtherTax: 0,
       zakat: 0,
       otherDeductions: 0,
     };
 
-    // Merge allowances and deductions with defaults
-    const finalAllowances = { ...defaultAllowances, ...allowances };
-    let finalDeductions = { ...defaultDeductions, ...deductions };
-
-    // Fetch active loan installment
+    // Fetch approved loan installment
     const loan = await Loan.findOne({ employeeId: employee._id, status: 'Approved' });
     const loanInstallment = loan ? loan.monthlyInstallment : 0;
 
     // Add loan installment to deductions
-    finalDeductions.loanInstallment = loanInstallment;
+    const finalDeductions = {
+      ...defaultDeductions,
+      ...deductions,
+      loanInstallment: loanInstallment,
+    };
+
+    // Merge allowances
+    const finalAllowances = { ...defaultAllowances, ...allowances };
 
     // Calculate total salary
-    const totalAllowances = Object.values(finalAllowances).reduce((acc, val) => acc + val, 0);
-    const totalDeductions = Object.values(finalDeductions).reduce((acc, val) => acc + val, 0);
+    const totalAllowances = Object.values(finalAllowances).reduce((acc, val) => acc + (val || 0), 0);
+    const totalDeductions = Object.values(finalDeductions).reduce((acc, val) => acc + (val || 0), 0);
     const totalSalary = baseSalary + totalAllowances - totalDeductions;
 
     // Get current month and year
@@ -99,6 +102,7 @@ exports.createSalary = async (req, res) => {
     res.status(500).json({ error: `Error creating salary: ${error.message}` });
   }
 };
+
 
 // Update Salary
 exports.updateSalary = async (req, res) => {

@@ -11,4 +11,11 @@ router.put('/approve/:loanId', loanController.approveLoan);
 // Deduct Loan Installment
 router.put('/deduct/:employeeId', loanController.deductLoanInstallment);
 
+router.get('/all-loan-requests', loanController.getAllLoanRequests);
+
+// Fetch loan requests for a specific employee
+router.get('/employee/:employeeId', loanController.getEmployeeLoanRequests);
+
+
+
 module.exports = router;

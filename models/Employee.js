@@ -21,6 +21,10 @@ const EmployeeSchema = new mongoose.Schema({
     enum: ['Employee', 'HR Manager', 'Project Manager'],
     default: 'Employee', // Default role is "Employee"
   },
+  leaveBalance: {
+    type: Number,
+    default: 20, // Default leave balance for every new employee
+  },
 });
 
 // Hash the password before saving
